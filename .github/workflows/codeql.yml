@@ -1,0 +1,41 @@
+name: Code Scanning
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "**.go"
+      - go.mod
+      - go.sum
+  pull_request:
+    branches: [master]
+    paths:
+      - "**.go"
+      - go.mod
+      - go.sum
+  schedule:
+    - cron: "50 4 15 * *"
+  workflow_call:
+
+jobs:
+  CodeQL-Build:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.19.0'
+          cache: true
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: go
+          queries: security-and-quality
+      - run: make build
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
